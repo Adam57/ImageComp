@@ -833,9 +833,9 @@ void Compressor::LoadBinaryDataFromFile(){
       file_count++;
       // if( file_count > 500000){
       // if( file_count > 1){
-      if( file_count > 0){
-      	break;
-      }
+      // if( file_count > 10){
+      // 	break;
+      // }
 
     }
     delete[] idbuf;

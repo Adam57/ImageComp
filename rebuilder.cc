@@ -131,10 +131,29 @@ void rebuilder::RemoveRepsOriginalOrder(){
 
 /*huffman on Angle*/
 void rebuilder::HuffmanForAngle(){
-  LoadMapper();
+  LoadMapperAngle();
   LoadBinaryDataFromFile();
   FillBinsHuffmanAngle();
   CaculateHuffmanAngleSize();
+}
+
+void rebuilder::LoadMapperAngle(){
+  int angle_table_size = 65536;
+  angle_table.reserve(angle_table_size);
+  for(uint i = 0; i < angle_table.size(); i++){
+    angle_table.push_back(0);
+  }
+  FILE * pFile;
+  pFile = fopen (this->angle_remap_file.c_str(), "r");
+  int angle_id;
+  int freq;
+  int position = 0;
+  while(fscanf(pFile, "%d %d\n", &angle_id, &freq)!= EOF){
+    // std::cout << codeword_id << " " << freq <<"\n";
+    angle_table[angle_id] = position++;
+  }
+  fclose(pFile);
+  // std::cout << position << "\n";
 }
 
 /*caculate bit average for Angle*/
@@ -162,14 +181,15 @@ void rebuilder::FillBinsHuffmanAngle(){
     std::vector<int> angle_values;
     for(uint i = 0; i < kps.size(); i++){
       // angle_values.push_back( 65536 - kps[i].angle );
-      angle_values.push_back( kps[i].angle );
+      // angle_values.push_back( kps[i].angle );
+      angle_values.push_back( angle_table[kps[i].angle] );
     }   
 
     /*take delta for angle*/
-    // std::sort(angle_values.begin(), angle_values.end());
-    // for(uint i = angle_values.size() - 1; i >= 1; i--){
-    //   angle_values[i] = angle_values[i] - angle_values[i-1];
-    // }
+    std::sort(angle_values.begin(), angle_values.end());
+    for(uint i = angle_values.size() - 1; i >= 1; i--){
+      angle_values[i] = angle_values[i] - angle_values[i-1];
+    }
 
     // angle_values.resize(15);
     // for(int i = 0; i < angle_values.size(); i++){
@@ -186,7 +206,7 @@ void rebuilder::FillBinsHuffmanAngle(){
     // displayComparison(angle_values);
     // moveToFront(angle_values);
 
-    remapAngle(angle_values);
+    // remapAngle(angle_values);
 
     AngleHuffmanInfoEntry angle_info;
 
@@ -202,33 +222,33 @@ void rebuilder::FillBinsHuffmanAngle(){
     }
 
     for(uint i = 0; i < angle_info.number_of_boundries - 1; i++){
-      std::cout << "number less than " << angle_info.boundary[i+1] <<": " << angle_info.bins[i] << "\n";
+      // std::cout << "number less than " << angle_info.boundary[i+1] <<": " << angle_info.bins[i] << "\n";
     }
 
     /*get huffman code length*/
     Huffman_Canonical(angle_info.bins, angle_info.number_of_boundries - 1, angle_info.huffman_bits_per_bin);
 
     for(uint i = 0; i < angle_info.number_of_boundries - 1; i++){
-      std::cout << "huffman code length for: " << angle_info.boundary[i+1] <<" is: " << angle_info.huffman_bits_per_bin[i]<< "\n";
+      // std::cout << "huffman code length for: " << angle_info.boundary[i+1] <<" is: " << angle_info.huffman_bits_per_bin[i]<< "\n";
     }
 
     for(uint i = 0; i < angle_info.number_of_boundries - 1; i++){
       uint bits = (angle_info.huffman_bits_per_bin[i] + angle_info.bits_per_bin[i]) * (angle_info.bins[i] );
       angle_info.total_huffman_code_bits += bits;
-      std::cout << "For " << angle_info.boundary[i+1] << " bits(16) is: " << (angle_info.bins[i]) * 16 <<" huffman bits is: " << bits << "\n";
+      // std::cout << "For " << angle_info.boundary[i+1] << " bits(16) is: " << (angle_info.bins[i]) * 16 <<" huffman bits is: " << bits << "\n";
     }
 
     /*header info*/
-    angle_info.total_huffman_code_bits += 56;//sort by angle, 14*4 = 68
+    // angle_info.total_huffman_code_bits += 56;//sort by angle, 14*4 = 68
 
     // angle_info.total_huffman_code_bits += 15;
     if(angle_info.total_huffman_code_bits > angle_values.size() * 16 ){
       angle_info.total_huffman_code_bits = angle_values.size() * 16;
     }
-    angle_info.total_huffman_code_bits += 1;
+    // angle_info.total_huffman_code_bits += 1;
     // angle_info.total_huffman_code_bits += angle_values.size(); //raw 
 
-    std::cout << "Image length: " << angle_values.size() << " total bits(16): " << angle_values.size() * 16 << " huffman bits: " << angle_info.total_huffman_code_bits << "\n";
+    // std::cout << "Image length: " << angle_values.size() << " total bits(16): " << angle_values.size() * 16 << " huffman bits: " << angle_info.total_huffman_code_bits << "\n";
 
     /*get the actual value of canonical huffman codes*/
     // std::vector<CanonicalHuffmanNode> huffman_code_vector;
@@ -244,7 +264,7 @@ void rebuilder::FillBinsHuffmanAngle(){
 
 /*huffman on X*/
 void rebuilder::HuffmanForX(){
-  LoadMapper();
+  // LoadMapper();
   LoadBinaryDataFromFile();
   FillBinsHuffmanX();
   CaculateHuffmanXSize();
@@ -657,10 +677,10 @@ void rebuilder::FillBinsHuffmanCodeword(){
       }      
 
       /*take delta for codeword*/
-      // std::sort(cw_values.begin(), cw_values.end());
-      // for(uint i = cw_values.size() - 1; i >= 1; i--){
-      //   cw_values[i] = cw_values[i] - cw_values[i-1];
-      // }
+      std::sort(cw_values.begin(), cw_values.end());
+      for(uint i = cw_values.size() - 1; i >= 1; i--){
+        cw_values[i] = cw_values[i] - cw_values[i-1];
+      }
 
       CodewordHuffmanInfoEntry cw_info;
 
@@ -674,16 +694,16 @@ void rebuilder::FillBinsHuffmanCodeword(){
       // }
       // std::cout << "\nafter move to front: \n";
       // moveToFront(cw_values);
-      moveToFrontApprox(cw_values);
+      // moveToFrontApprox(cw_values);
 
-      cw_info.mtf_approx_match = approxCopyCounter(cw_values);
-      cw_info.mtf_exact_match = exactCopyCounter(cw_values);
+      // cw_info.mtf_approx_match = approxCopyCounter(cw_values);
+      // cw_info.mtf_exact_match = exactCopyCounter(cw_values);
 
       // for(int i = 0; i < cw_values.size(); i ++){
       //   std::cout << cw_values[i] << " ";
       // }
       // std::cout << "\n";
-      displayComparison(cw_values);
+      // displayComparison(cw_values);
 
       /*fill up the bins*/
       for(uint i = 0; i < cw_values.size(); i++){
@@ -693,21 +713,21 @@ void rebuilder::FillBinsHuffmanCodeword(){
         }
       }
 
-      for(uint i = 0; i < cw_info.number_of_boundries - 1; i++){
-        std::cout << "number less than " << cw_info.boundary[i+1] <<": " << cw_info.bins[i] << "\n";
-      }
+      // for(uint i = 0; i < cw_info.number_of_boundries - 1; i++){
+      //   std::cout << "number less than " << cw_info.boundary[i+1] <<": " << cw_info.bins[i] << "\n";
+      // }
 
       /*get huffman code length*/
       Huffman_Canonical(cw_info.bins, cw_info.number_of_boundries - 1, cw_info.huffman_bits_per_bin);
 
-      for(uint i = 0; i < cw_info.number_of_boundries - 1; i++){
-        std::cout << "huffman code length for: " << cw_info.boundary[i+1] <<" is: " << cw_info.huffman_bits_per_bin[i]<< "\n";
-      }
+      // for(uint i = 0; i < cw_info.number_of_boundries - 1; i++){
+      //   std::cout << "huffman code length for: " << cw_info.boundary[i+1] <<" is: " << cw_info.huffman_bits_per_bin[i]<< "\n";
+      // }
 
       for(uint i = 0; i < cw_info.number_of_boundries - 1; i++){
         uint bits = (cw_info.huffman_bits_per_bin[i] + cw_info.bits_per_bin[i]) * (cw_info.bins[i] );
         cw_info.total_huffman_code_bits += bits;
-        std::cout << "For " << cw_info.boundary[i+1] << " bits(21) is: " << (cw_info.bins[i]) * 21 <<" huffman bits is: " << bits << "\n";
+        // std::cout << "For " << cw_info.boundary[i+1] << " bits(21) is: " << (cw_info.bins[i]) * 21 <<" huffman bits is: " << bits << "\n";
       }
 
       /*16 * 4bits = 64 bits*/
@@ -720,9 +740,9 @@ void rebuilder::FillBinsHuffmanCodeword(){
           cw_info.total_huffman_code_bits = cw_values.size() * 21;
       }
       cw_info.total_huffman_code_bits += 1; //raw 
-      std::cout << "number of approx for MTF(include exact): " << cw_info.mtf_approx_match << "\n";
-      std::cout << "number of exact for MTF: " << cw_info.mtf_exact_match << "\n";
-      std::cout << "Image length: " << cw_values.size() << " total bits(21): " << cw_values.size() * 21 << " huffman bits: " << cw_info.total_huffman_code_bits << "\n";
+      // std::cout << "number of approx for MTF(include exact): " << cw_info.mtf_approx_match << "\n";
+      // std::cout << "number of exact for MTF: " << cw_info.mtf_exact_match << "\n";
+      // std::cout << "Image length: " << cw_values.size() << " total bits(21): " << cw_values.size() * 21 << " huffman bits: " << cw_info.total_huffman_code_bits << "\n";
 
       /*get the actual value of canonical huffman codes*/
       // std::vector<CanonicalHuffmanNode> huffman_code_vector;
@@ -1071,10 +1091,11 @@ void rebuilder::LoadBinaryDataFromFile(){
 
       // std::cout << "\n";
       // std::cout << file_count << "\n";
-      file_count++;
+      std::cout << file_count++ << "\n";
       // if( file_count > 500000){
-      // if( file_count > 999){
-      if( file_count > 0){
+      if( file_count > 999){
+      // if( file_count > 0){
+      // if( file_count > 9){
       	break;
       }
 
@@ -1111,11 +1132,647 @@ int rebuilder::ParseMultipleCodewordKeypoints(std::string id,
       ptr++;
       // std::cout << x << "," << y << "," << fsize << "," << angle << "," << (int)codewordcount << "," <<codeword << " ";
       codewordcount--;
-      // codewords_tmp.push_back(codeword);
-      codewords_tmp.push_back(order_table[codeword]);
+      codewords_tmp.push_back(codeword);
+      // codewords_tmp.push_back(order_table[codeword]);
       // cwkeypoint_byname_[id].emplace_back(codeword, x, y, fsize, angle); // duplicate information stored here, x, y, fsize, angle, comment by me
     }
     keypoint_entry_byname_[id].emplace_back(codewords_tmp, x, y, fsize, angle);
 
     return static_cast<int>(ptr - optr);
 }
+
+void rebuilder::Vbyte(){
+  num_vbyte_vars = 0;
+  std::cout << "new Vbyte\n";
+  LoadBinaryDataFromFile();
+  for (auto it = keypoint_entry_byname_.begin(); it != keypoint_entry_byname_.end(); it++) {
+    /*take out the keypoint value*/
+    std::vector<KeypointEntry> kps = it->second;
+    // std::sort(kps.begin(), kps.end(), SortByFirstCodewordForVector);
+
+    /*sort kps by x,y,size then remove duplicates*/
+    std::sort(kps.begin(), kps.end(), SortByXThenYThenSizeForVector);
+    // std::sort(kps.begin(), kps.end(), SortBySizeThenXThenYForVector);
+    kps.erase( unique( kps.begin(), kps.end(), UniqueByXThenYThenSizeForVector), kps.end() );
+
+    /*take out the x value*/
+    // std::vector<uint16_t> x_values;
+    std::vector<unsigned int> values;
+    for(uint i = 0; i < kps.size(); i++){
+      values.push_back(kps[i].fsize);
+      num_vbyte_vars++;
+    }
+
+    // for(uint i = values.size() - 1; i >= 1; i--){
+    //   values[i] = values[i] - values[i-1];
+    // }   
+
+    compressionVbytes(values);
+  }
+
+  std::cout << "vbyte uncompressed size: " << num_vbyte_vars*2 << "\n";
+  std::cout << "vbyte compressed size: " << this->compressedList.size() << "\n";
+}
+
+int rebuilder::compressionVbytes(std::vector<unsigned uint> input){
+   int compressedSize = 0;
+   for (int i = 0; i < input.size(); ++i){
+          unsigned char byteArr[sizeof(int)];
+          bool started = false;
+          int x = 0;
+
+          for (x = 0; x < sizeof(int); x++) {
+             byteArr[x] = (input[i]%128);
+             input[i] /= 128;
+          }
+
+          for (x = sizeof(int) - 1; x > 0; x--) {
+            if (byteArr[x] != 0 || started == true) {
+              started = true;
+              byteArr[x] |= 128;
+              this->compressedList.push_back(byteArr[x]);
+              compressedSize++;
+            }
+          }
+          this->compressedList.push_back(byteArr[0]);
+          compressedSize++;
+   }
+   return compressedSize;
+}
+
+void rebuilder::pfd(){
+  
+  //threshold initalization
+  pfdb[0] = 2;
+  pfdb[1] = 4;
+  pfdb[2] = 8;
+  pfdb[3] = 16;
+  pfdb[4] = 32;
+  pfdb[5] = 64;
+  pfdb[6] = 128;
+  pfdb[7] = 256;
+  pfdb[8] = 512;
+  pfdb[9] = 1024;
+  pfdb[10] = 2048;
+  pfdb[11] = 4096;
+  pfdb[12] = 8192;
+  pfdb[13] = 16384;
+  pfdb[14] = 32768;
+  pfdb[15] = 65536;
+  pfdb[16] = 131072;
+  pfdb[17] = 262144;
+  pfdb[18] = 524288;
+  pfdb[19] = 1048576;
+  pfdb[20] = 2097152;
+
+  pfd_bits = 0;
+
+  num_vbyte_vars = 0;
+  std::cout << "pfd\n";
+  LoadBinaryDataFromFile();
+  for (auto it = keypoint_entry_byname_.begin(); it != keypoint_entry_byname_.end(); it++) {
+    /*take out the keypoint value*/
+    std::vector<KeypointEntry> kps = it->second;
+    // std::sort(kps.begin(), kps.end(), SortByFirstCodewordForVector);
+
+    /*sort kps by x,y,size then remove duplicates*/
+    // std::sort(kps.begin(), kps.end(), SortByXThenYThenSizeForVector);
+    // std::sort(kps.begin(), kps.end(), SortBySizeThenXThenYForVector);
+    // kps.erase( unique( kps.begin(), kps.end(), UniqueByXThenYThenSizeForVector), kps.end() );
+
+    /*take out the x value*/
+    // std::vector<uint16_t> x_values;
+    std::vector<unsigned int> values;
+    for(uint i = 0; i < kps.size(); i++){
+      values.push_back(kps[i].codeword_vector[0]);
+      num_vbyte_vars++;
+    }
+
+    /*only for x*/
+    // for(uint i = values.size() - 1; i >= 1; i--){
+    //   values[i] = values[i] - values[i-1];
+    // }   
+
+    //get number of chunks and the remainder
+    int num_chunks = values.size()/32;
+    int remainder = values.size()%32; 
+
+    std::cout << "\nnew image: " << "\n";
+    std::cout << "image length: " << values.size() << "\n";
+    std::cout << "num of chunks: " << num_chunks << " remainder: " << remainder << std::endl;
+    // pfd_bits += remainder * x_bits;
+    // pfd_bits += remainder * y_bits;
+    // pfd_bits += remainder * size_bits;
+    // pfd_bits += remainder * angle_bits;
+    pfd_bits += remainder * cw_bits;
+
+    //scan chunks to get proper b and number of exceptions for each chunk
+    for(int i=0; i<num_chunks; i++) {
+      int b = 0;
+      int count = 0;
+      std::cout << "chunk num: " << i+1 << "\n";
+      for(int k = 0; k <= 20; k++) {
+        for(int j = 32*i; j < 32*(i+1); j++) {
+          if(values[j] < pfdb[k]){
+            count ++;
+          }
+        }
+
+        if(count >= threshold) {
+          b = k+1;
+          std::cout << "threshold: " << pfdb[k] << "\n";
+          std::cout << "b: " << b << "\n";
+          std::cout << "number of vars below threshold: " << count << "\n";
+          std::cout << "# of exceptions: " << 32 - count << "\n";
+
+          // pfd_bits += 33*b + (32-count)*x_bits;
+          // pfd_bits += 33*b + (32-count)*y_bits;
+          // pfd_bits += 33*b + (32-count)*size_bits;
+          // pfd_bits += 33*b + (32-count)*angle_bits;
+          pfd_bits += 33*b + (32-count)*cw_bits;
+          break;
+        }else{
+          count = 0;
+        }
+      }
+    }
+  
+  }
+
+  std::cout << "uncompressed size: " << num_vbyte_vars*24 << "\n";
+  std::cout << "compressed size: " <<  pfd_bits << "\n";
+}
+
+void rebuilder::golomb(){
+  
+  //threshold initalization
+  golomb_bits = 0;
+
+  num_vbyte_vars = 0;
+  std::cout << "golomb\n";
+  LoadBinaryDataFromFile();
+  for (auto it = keypoint_entry_byname_.begin(); it != keypoint_entry_byname_.end(); it++) {
+    /*take out the keypoint value*/
+    std::vector<KeypointEntry> kps = it->second;
+    // std::sort(kps.begin(), kps.end(), SortByFirstCodewordForVector);
+
+    /*sort kps by x,y,size then remove duplicates*/
+    // std::sort(kps.begin(), kps.end(), SortByXThenYThenSizeForVector);
+    // std::sort(kps.begin(), kps.end(), SortBySizeThenXThenYForVector);
+    // kps.erase( unique( kps.begin(), kps.end(), UniqueByXThenYThenSizeForVector), kps.end() );
+
+    /*take out the x value*/
+    // std::vector<uint16_t> x_values;
+    std::vector<unsigned int> values;
+    for(uint i = 0; i < kps.size(); i++){
+      // values.push_back(kps[i].codeword_vector[0]);
+      values.push_back(kps[i].angle);
+      // values.push_back(kps[i].y);
+      // values.push_back(kps[i].x);
+      num_vbyte_vars++;
+    }
+
+    /*only for x*/
+    // for(uint i = values.size() - 1; i >= 1; i--){
+    //   values[i] = values[i] - values[i-1];
+    // }   
+
+    /*calculating ave*/
+    int sum = 0;
+    for(uint i = 0; i < values.size(); i++){
+      sum += values[i];
+    }
+    float ave = sum/values.size();
+    float b = a * ave;
+    std::cout << "sum: " << sum << "\n";
+    std::cout << "ave: " << ave << "\n";
+    std::cout << "b param: " << b << "\n"; 
+
+    int b_int = b;
+
+    if(b_int!=0){
+      int binary_bits = 0;
+      while(b_int) {
+        b_int/=2;
+        binary_bits++;
+      }
+      std::cout << "binary_bits: " << binary_bits << "\n";
+
+      for(uint i = 0; i < values.size(); i++){
+        int unary = values[i]/(int)b;
+        // int binary = values[i]%(int)b;
+        // std::cout << unary << " " << binary << "\n";
+        golomb_bits += (unary+1);
+        golomb_bits += binary_bits;
+      }
+    } else {
+       for(uint i = 0; i < values.size(); i++){
+        golomb_bits += (values[i]+1);
+      }
+    }
+  }
+
+  // std::cout << "uncompressed size: " << num_vbyte_vars*24 << "\n";
+  std::cout << "uncompressed size: " << num_vbyte_vars*16 << "\n";
+  std::cout << "compressed size: " <<  golomb_bits << "\n";
+}
+
+void rebuilder::simple9() {
+  //threshold initalization
+  simple9_bits = 0;
+
+  num_vbyte_vars = 0;
+  std::cout << "simple9\n";
+  LoadBinaryDataFromFile();
+  for (auto it = keypoint_entry_byname_.begin(); it != keypoint_entry_byname_.end(); it++) {
+    /*take out the keypoint value*/
+    std::vector<KeypointEntry> kps = it->second;
+    // std::sort(kps.begin(), kps.end(), SortByFirstCodewordForVector);
+
+    /*sort kps by x,y,size then remove duplicates*/
+    std::sort(kps.begin(), kps.end(), SortByXThenYThenSizeForVector);
+    // std::sort(kps.begin(), kps.end(), SortBySizeThenXThenYForVector);
+    kps.erase( unique( kps.begin(), kps.end(), UniqueByXThenYThenSizeForVector), kps.end() );
+
+    /*take out the x value*/
+    std::vector<unsigned int> values;
+    for(uint i = 0; i < kps.size(); i++){
+      // values.push_back(kps[i].codeword_vector[0]);
+      // values.push_back(kps[i].angle);
+      // values.push_back(kps[i].fsize);
+      // values.push_back(kps[i].y);
+      values.push_back(kps[i].x);
+      num_vbyte_vars++;
+    }
+
+    /*only for x*/
+    for(uint i = values.size() - 1; i >= 1; i--){
+      values[i] = values[i] - values[i-1];
+    }
+
+    std::vector<unsigned int> bits;
+    for(uint i = 0; i < values.size(); i++) {
+      int binary_bits = 0;
+      int v = values[i];
+      while(v){
+       v= v/2;
+       binary_bits++;
+      }
+      if(values[i] == 0) {
+        binary_bits = 1;
+      }
+      // std::cout << values[i] << " " << binary_bits << "\n";
+      bits.push_back(binary_bits);
+    }
+
+    /*for test*/
+    // for(uint i=0; i<bits.size(); i++){
+    //   std::cout << bits[i] << " ";
+    // }
+    // std::cout << "\n";
+
+    for(uint i = 0; i < bits.size(); i++) {
+      /*check if next 28 numbers fits into 1 bits each*/
+      if(i+28 <= bits.size()){//if we have 28 numbers
+        uint j;
+        for(j = i; j < i+28; j++) {
+            if(bits[j]!=1){
+              break;
+            }
+        }
+        if(j == i+28) { //if fits go seal those 28 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "28 1's ";
+          i+=27;
+          continue;
+        }
+      }
+
+      /*check if next 14 numbers fits into 2 bits each*/
+      if(i+14 <= bits.size()){//if we have 14 numbers
+        uint j;
+        for(j = i; j < i+14; j++) {
+            if(bits[j]>2){
+              break;
+            }
+        }
+        if(j == i+14) { //if fits go seal those 14 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "14 2's ";
+          i+=13;
+          continue;
+        }
+      }
+
+      /*check if next 9 numbers fits into 3 bits each*/
+      if(i+9 <= bits.size()){//if we have 9 numbers
+        uint j;
+        for(j = i; j < i+9; j++) {
+            if(bits[j]>3){
+              break;
+            }
+        }
+        if(j == i+9) { //if fits go seal those 9 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "9 3's ";
+          i+=8;
+          continue;
+        }
+      }
+
+      /*check if next 7 numbers fits into 4 bits each*/
+      if(i+7 <= bits.size()){//if we have 7 numbers
+        uint j;
+        for(j = i; j < i+7; j++) {
+            if(bits[j]>4){
+              break;
+            }
+        }
+        if(j == i+7) { //if fits go seal those 7 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "7 4's ";
+          i+=6;
+          continue;
+        }
+      }
+
+      /*check if next 5 numbers fits into 5 bits each*/
+      if(i+5 <= bits.size()){//if we have 5 numbers
+        uint j;
+        for(j = i; j < i+5; j++) {
+            if(bits[j]>5){
+              break;
+            }
+        }
+        if(j == i+5) { //if fits go seal those 5 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "5 5's ";
+          i+=4;
+          continue;
+        }
+      }
+
+      /*check if next 4 numbers fits into 7 bits each*/
+      if(i+4 <= bits.size()){//if we have 4 numbers
+        uint j;
+        for(j = i; j < i+4; j++) {
+            if(bits[j]>7){
+              break;
+            }
+        }
+        if(j == i+5) { //if fits go seal those 5 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "4 7's ";
+          i+=3;
+          continue;
+        }
+      }
+
+      /*check if next 3 numbers fits into 9 bits each*/
+      if(i+3 <= bits.size()){//if we have 3 numbers
+        uint j;
+        for(j = i; j < i+3; j++) {
+            if(bits[j]>9){
+              break;
+            }
+        }
+        if(j == i+3) { //if fits go seal those 5 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "3 9's ";
+          i+=2;
+          continue;
+        }
+      }
+
+      /*check if next 2 numbers fits into 14 bits each*/
+      if(i+2 <= bits.size()){//if we have 2 numbers
+        uint j;
+        for(j = i; j < i+2; j++) {
+            if(bits[j]>14){
+              break;
+            }
+        }
+        if(j == i+2) { //if fits go seal those 5 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "2 14's ";
+          i+=1;
+          continue;
+        }
+      }
+
+      /*check if next 1 number fits into 28 bits each*/
+      if(i+1 <= bits.size()){//if we have 1 numbers
+        uint j;
+        for(j = i; j < i+1; j++) {
+            if(bits[j]>28){
+              break;
+            }
+        }
+        if(j == i+1) { //if fits go seal those 5 numbers
+          simple9_bits+=28;
+          simple9_bits+=4;
+          // std::cout << "1 28's ";
+          i+=0;
+          continue;
+        }
+      }
+
+    }
+      // std::cout << "\n";
+  }
+  // std::cout << "uncompressed size: " << num_vbyte_vars*24 << "\n";
+  std::cout << "uncompressed size: " << num_vbyte_vars*16 << "\n";
+  std::cout << "compressed size: " <<  simple9_bits << "\n";
+  
+}
+
+void rebuilder::gzip(){
+  
+  //threshold initalization
+  golomb_bits = 0;
+
+  num_vbyte_vars = 0;
+  std::cout << "gzip\n";
+  std::ofstream outfile;
+  outfile.open("junk.dat", std::ios::binary | std::ios::out);
+  LoadBinaryDataFromFile();
+  for (auto it = keypoint_entry_byname_.begin(); it != keypoint_entry_byname_.end(); it++) {
+    /*take out the keypoint value*/
+    std::vector<KeypointEntry> kps = it->second;
+    // std::sort(kps.begin(), kps.end(), SortByFirstCodewordForVector);
+
+    /*sort kps by x,y,size then remove duplicates*/
+    // std::sort(kps.begin(), kps.end(), SortByXThenYThenSizeForVector);
+    // std::sort(kps.begin(), kps.end(), SortBySizeThenXThenYForVector);
+    // kps.erase( unique( kps.begin(), kps.end(), UniqueByXThenYThenSizeForVector), kps.end() );
+
+    /*take out the x value*/
+    // std::vector<uint16_t> x_values;
+    std::vector<unsigned int> values;
+    for(uint i = 0; i < kps.size(); i++){
+      values.push_back(kps[i].codeword_vector[0]);
+      // values.push_back(kps[i].angle);
+      // values.push_back(kps[i].fsize);
+      // values.push_back(kps[i].y);
+      // values.push_back(kps[i].x);
+      num_vbyte_vars++;
+    }
+
+    /*only for x*/
+    // for(uint i = values.size() - 1; i >= 1; i--){
+    //   values[i] = values[i] - values[i-1];
+    // }   
+
+    /*for x, y, size, angle*/
+    // for(uint i = 0; i < values.size(); i++) {
+    //   short tmp = values[i];
+    //   outfile.write((char*)&tmp, sizeof(short)); // sizeof can take a type
+    // }
+
+    /*for cw*/
+    for(uint i = 0; i < values.size(); i++) {
+      int v = values[i];
+      char c1 = v >> 16;
+      outfile.write(&c1, sizeof(char)); // sizeof can take a type
+      char c2 = (v >> 8) & 0b00000000000000000000000011111111;
+      outfile.write(&c2, sizeof(char)); // sizeof can take a type
+      char c3 = (v & 0b00000000000000000000000011111111);
+      outfile.write(&c3, sizeof(char)); // sizeof can take a type
+      // std::cout << v << " " << (short)c1 << " " << (short)c2 << " " << (short)(c3) << " " << std::endl;
+      // std::cout << std::bitset<32>(v) << " " << std::bitset<8>(c1) << " " << std::bitset<8>(c2) << " " << std::bitset<8>(c3) << " " << std::endl;
+    }
+
+  }
+  outfile.close();
+
+  /*test*/
+  // std::ifstream infile; 
+  // infile.open("junk.dat", std::ios::binary | std::ios::in);
+  //   for(uint i = 0; i < 10; i++){
+  //   short t;
+  //   infile.read((char*)&t, sizeof(short)); // reads 2 bytes into a cell that is either 2 or 4
+  //   std::cout << t << std::endl;
+  // }
+  // infile.close();
+ 
+  // std::cout << "uncompressed size: " << num_vbyte_vars*24 << "\n";
+  std::cout << "uncompressed size: " << num_vbyte_vars << "\n";
+  std::cout << "compressed size: " <<  num_vbyte_vars << "\n";
+}
+
+/*ans*/
+#define KB *(1<<10)
+#define MB *(1<<20)
+#define BUFFERSIZE ((1 MB) - 1)
+#define FUZ_NB_TESTS  (128 KB)
+#define PROBATABLESIZE (4 KB)
+#define FUZ_UPDATERATE  200
+#define PRIME1   2654435761U
+#define PRIME2   2246822519U
+
+
+static unsigned FUZ_rand (unsigned* src)
+{
+    *src =  ( (*src) * PRIME1) + PRIME2;
+    return (*src) >> 11;
+}
+
+static void generate (void* buffer, size_t buffSize, double p, U32* seed)
+{
+    char table[PROBATABLESIZE] = {0};
+    int remaining = PROBATABLESIZE;
+    int pos = 0;
+    int s = 0;
+    char* op = (char*) buffer;
+    char* oend = op + buffSize;
+
+    /* Build Table */
+    while (remaining)
+    {
+        int n = (int) (remaining * p);
+        int end;
+        if (!n) n=1;
+        end = pos + n;
+        while (pos<end) table[pos++]= (char) s;
+        s++;
+        remaining -= n;
+    }
+
+    /* Fill buffer */
+    while (op<oend)
+    {
+        const int r = FUZ_rand (seed) & (PROBATABLESIZE-1);
+        *op++ = table[r];
+    }
+}
+
+// void rebuilder::ans(){
+//   std::cout << "ans\n";
+//   BYTE* bufferTest;
+//   BYTE* bufferP15   = (BYTE*) malloc (BUFFERSIZE+64);
+//   U32 rootSeed = 10;
+//   U32 roundSeed = rootSeed ^ 0xEDA5B371;
+//   const size_t maxTestSizeMask = 0x1FFFF;
+//   generate (bufferP15 , BUFFERSIZE, 0.15, &rootSeed);
+//   size_t offset = (FUZ_rand(&roundSeed) % (BUFFERSIZE - 64 - maxTestSizeMask));
+//   bufferTest = bufferP15 + offset;
+
+//   BYTE* bufferDst   = (BYTE*) malloc (BUFFERSIZE+64);
+//   size_t bufferDstSize = BUFFERSIZE+64;
+//   size_t sizeOrig = (FUZ_rand (&roundSeed) & maxTestSizeMask) + 1;
+
+//   // size_t sizeCompressed = FSE_compress (bufferDst, bufferDstSize, bufferTest, sizeOrig);
+// }
+
+void rebuilder::ans(){
+  std::cout << "ans\n";
+}
+
+// void rebuilder::ans(){
+//   std::cout << "ans\n";
+//   int sourceSize = 10;
+//   int dstSize = FSE_COMPRESSBOUND(sourceSize);
+
+//   BYTE* bufferTest = (BYTE*) malloc (sourceSize);
+//   BYTE* bufferDst = (BYTE*) malloc (dstSize);
+
+
+//   // std::cout << "bufferTest\n";
+//   // for(uint i = 0; i < 10; i++) {
+//   //   bufferTest[i] = 12;
+//   //   std::cout << std::bitset<8>(bufferTest[i]) << "\n";
+//   // }
+//   bufferTest[0] = 'a';
+//   bufferTest[1] = 'a';
+//   bufferTest[2] = 'a';
+//   bufferTest[3] = 'b';
+//   bufferTest[4] = 'c';
+//   bufferTest[5] = 'c';
+//   bufferTest[6] = 'a';
+//   bufferTest[7] = 'a';
+//   bufferTest[8] = 'a';
+//   bufferTest[9] = 'a';
+
+//   bufferDst[dstSize] = {0}; 
+
+//   FSE_compress(bufferDst, bufferTest, sourceSize);
+
+//   std::cout << "--bufferDst--\n";
+
+//   // for(uint i = 0; i < 100; i++) {
+//   //   std::cout << bufferDst[i] << "\n";
+//   //   std::cout << std::bitset<8>(bufferDst[i]) << "\n";
+//   // }
+
+//   /* exit */
+//   std::cout << "exiting now\n";
+//   free (bufferTest);
+// }

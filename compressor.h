@@ -11,9 +11,10 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "entry.h"
 #include "bits_utils.h"
-#include "../include/rerank_keypoints.h"
+// #include "../include/rerank_keypoints.h"
 
 void GetCanonicalHuffmanCode(std::vector<CanonicalHuffmanNode>& huffman_code_vector, int huffman_bits_per_bin[], int size);
 

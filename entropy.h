@@ -11,6 +11,7 @@
 #define LIBDO_MAX_BYTES      2000000
 
 #include <string>
+#include <vector>
 
 class Entropy {
  public:
@@ -40,6 +41,10 @@ class Entropy {
   /*get the data entropy*/
   float   shannon_entropy_from_file();
  
+ /*image wise entropy average*/
+  void cw_avrage_entropy();
+  void get_cw_entropy_dis();
+
  private:
   /** Frequecies for each byte */
   // int m_token_freqs[LIBDO_MAX_BYTES]; //frequency of each token in sample
@@ -51,6 +56,7 @@ class Entropy {
   float m_ratio;
   int LIBDISORDER_INITIALIZED;
   uint64_t num_events;
+  std::vector<float> entropy_vector;
 
   void initialize_lib();
   void count_num_tokens();
@@ -59,10 +65,12 @@ class Entropy {
   Entropy (const Entropy&);
   Entropy& operator= (const Entropy&);
 
-  const std::string binaryDocumentFile = "/mnt3/qi/indexData/bespoke_20170606_rerank.bin";
+  const std::string binaryDocumentFile = "/home/qw376/fic_data/rerank.bin";
 
   int parse_multiple_codeword_keypoints(std::string id,
                                       unsigned char *optr);
+
+  const std::string cw_entropy_output = "/home/qw376/fic_data/csv_files/cw_entropy.csv";
 
 };
 #endif // Entropy

@@ -3,6 +3,7 @@
 #include <memory>
 #include <iostream>
 #include <assert.h>
+#include <algorithm>
 
 template <typename Iterator>
 void dumpToFile(const std::string& path, Iterator start, Iterator end) { ///home/qw376/SIGIR2017/data
@@ -88,6 +89,8 @@ void VarByteEncoding::loadDataFromFile(){
 
   const size_t max_id_length = 1000;
   char *idbuf = new char[max_id_length];
+  int file_count = 0;
+  num_vars = 0;
   while (!feof(fp)) {
    //this varibale is used to record how many keypoints per image has, commend by me
    //since each keypoint may correspond to several codeword, commend by me
@@ -135,7 +138,26 @@ void VarByteEncoding::loadDataFromFile(){
       int bytes_read = parse_multiple_codeword_keypoints(id, ptr);
       ptr += bytes_read;
     }
+
+    /*do sorting and delta here*/
+    // std::sort(this->uncompressedList.begin(), this->uncompressedList.end());
+    // for(uint i = uncompressedList.size() - 1; i >= 1; i--){
+    //   uncompressedList[i] = uncompressedList[i] - uncompressedList[i-1];
+    // }
+    // for(int i = 0; i < this->uncompressedList.size(); i++) {
+    //   std::cout << this->uncompressedList[i] << " ";
+    // }
+    // std::cout << "\n";
+
     compressionVbytes(this->uncompressedList);
+
+    file_count++;
+    std::cout << file_count << std::endl;
+    if(file_count == 4999) {
+      std::cout << "compressedSize: " << this->compressedList.size() << std::endl;
+      std::cout << "uncompressedSize: " << num_vars * 2 << std::endl;
+      break;
+    }
   }
   delete[] idbuf;
 
@@ -154,11 +176,12 @@ int VarByteEncoding::parse_multiple_codeword_keypoints(std::string id,
     uint16_t fsize = ntohs(*reinterpret_cast<int16_t *>(ptr));
     ptr += 2;
     unsigned char codewordcount = *ptr;
-    this->uncompressedList.push_back(x);
-    this->uncompressedList.push_back(y);
+    // this->uncompressedList.push_back(x);
+    num_vars++;
+    // this->uncompressedList.push_back(y);
     this->uncompressedList.push_back(angle);
-    this->uncompressedList.push_back(fsize);
-    this->uncompressedList.push_back(codewordcount);
+    // this->uncompressedList.push_back(fsize);
+    // this->uncompressedList.push_back(codewordcount);
 
     ptr++;
     while (codewordcount > 0) {
@@ -169,7 +192,7 @@ int VarByteEncoding::parse_multiple_codeword_keypoints(std::string id,
       codeword = (codeword << 8) | *ptr;
       ptr++;
       codewordcount--;
-      this->uncompressedList.push_back(codeword);
+      // this->uncompressedList.push_back(codeword);
     }
 
     return static_cast<int>(ptr - optr);
@@ -178,5 +201,5 @@ int VarByteEncoding::parse_multiple_codeword_keypoints(std::string id,
 void VarByteEncoding::encoding(){
 	this->uncompressedList.clear();
 	loadDataFromFile();
-	dumpToFile(this->varByteDocumentFile, this->compressedList.begin(), this->compressedList.end());
+	// dumpToFile(this->varByteDocumentFile, this->compressedList.begin(), this->compressedList.end());
 }

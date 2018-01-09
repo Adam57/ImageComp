@@ -487,66 +487,50 @@ void Huffman_Uncompress( unsigned char *in, unsigned char *out,
 *  insize - Number of input bytes.
 *************************************************************************/
 
-void Huffman_Canonical(int input[], unsigned int insize, int output[]){
-  huff_bitstream_t* stream;
-  unsigned int     k, swaps, symbol;
-  huff_sym_t       tmp;
+void Huffman_Canonical(int input[], unsigned int insize, int output[]) {
+  huff_bitstream_t *stream =
+      reinterpret_cast<huff_bitstream_t *> (malloc(sizeof(huff_bitstream_t)));
+  // unsigned int     k, swaps, symbol;
+  uint k, swaps;
+  huff_sym_t tmp;
 
-  huff_sym_t* sym = new huff_sym_t[insize];
+  huff_sym_t *sym = new huff_sym_t[insize];
   /* Clear/init histogram */
-  for( k = 0; k < insize; k++ )
-  {
+  for (k = 0; k < insize; k++) {
     sym[k].Symbol = k;
-    sym[k].Count  = input[k];
-    sym[k].Code   = 0;
-    sym[k].Bits   = 0;
+    sym[k].Count = input[k];
+    sym[k].Code = 0;
+    sym[k].Bits = 0;
   }
-
-  /* Build histogram */
-  // for( k = 0; k < insize; k++ )
-  // { 
-  //   std::cout << k << "th input: " << input[k] << "\n";
-  //   sym[input[k]].Count ++;
-  // }
 
   /*Initialize all leaf nodes*/
   huff_encodenode_t nodes[MAX_TREE_NODES], *node_1, *node_2, *root;
   unsigned int num_symbols, nodes_left, next_idx;
   num_symbols = 0;
-  for( k = 0; k < insize; k++ )
-  {
-    if( sym[k].Count > 0 )
-    {
-      // std::cout << sym[k].Symbol << " " << sym[k].Count << " " << sym[k].Code << " " << sym[k].Bits << "\n";
+  for (k = 0; k < insize; k++) {
+    if (sym[k].Count > 0) {
       nodes[num_symbols].Symbol = sym[k].Symbol;
       nodes[num_symbols].Count = sym[k].Count;
-      nodes[num_symbols].ChildA = (huff_encodenode_t *) 0;
-      nodes[num_symbols].ChildB = (huff_encodenode_t *) 0;
-      ++ num_symbols;
+      nodes[num_symbols].ChildA = reinterpret_cast<huff_encodenode_t *>(0);
+      nodes[num_symbols].ChildB = reinterpret_cast<huff_encodenode_t *>(0);
+      ++num_symbols;
     }
   }
-  // std::cout << "num_symbols: " << num_symbols << "\n";
   /* Build tree by joining the lightest nodes until there is only
      one node left (the root node). */
-  root = (huff_encodenode_t *) 0;
+  root = reinterpret_cast<huff_encodenode_t *>(0);
   nodes_left = num_symbols;
   next_idx = num_symbols;
-  while( nodes_left > 1 )
-  {
+  while (nodes_left > 1) {
     /* Find the two lightest nodes */
-    node_1 = (huff_encodenode_t *) 0;
-    node_2 = (huff_encodenode_t *) 0;
-    for( k = 0; k < next_idx; ++ k )
-    {
-      if( nodes[k].Count > 0 )
-      {
-        if( !node_1 || (nodes[k].Count <= node_1->Count) )
-        {
+    node_1 = reinterpret_cast<huff_encodenode_t *>(0);
+    node_2 = reinterpret_cast<huff_encodenode_t *>(0);
+    for (k = 0; k < next_idx; ++k) {
+      if (nodes[k].Count > 0) {
+        if (!node_1 || (nodes[k].Count <= node_1->Count)) {
           node_2 = node_1;
           node_1 = &nodes[k];
-        }
-        else if( !node_2 || (nodes[k].Count <= node_2->Count) )
-        {
+        } else if (!node_2 || (nodes[k].Count <= node_2->Count)) {
           node_2 = &nodes[k];
         }
       }
@@ -560,48 +544,34 @@ void Huffman_Canonical(int input[], unsigned int insize, int output[]){
     root->Symbol = -1;
     node_1->Count = 0;
     node_2->Count = 0;
-    ++ next_idx;
-    -- nodes_left;
+    ++next_idx;
+    --nodes_left;
   }
   /* Store the tree in the sym[] array (the
       latter is used as a look-up-table for faster encoding) */
-  if( root )
-  {
-    Huffman_Canonical_StoreTree( root, sym, stream, 0, 0, insize);
-  }
-  else
-  {
+  if (root) {
+    Huffman_Canonical_StoreTree(root, sym, stream, 0, 0, insize);
+  } else {
     /* Special case: only one symbol => no binary tree */
     root = &nodes[0];
-    Huffman_Canonical_StoreTree( root, sym, stream, 0, 1, insize);
+    Huffman_Canonical_StoreTree(root, sym, stream, 0, 1, insize);
   }
 
   /* Sort histogram - first symbol first (bubble sort) */
-  do
-  {
+  do {
     swaps = 0;
-    for( k = 0; k < insize - 1; ++ k )
-    {
-      if( sym[k].Symbol > sym[k+1].Symbol )
-      {
-        tmp      = sym[k];
-        sym[k]   = sym[k+1];
-        sym[k+1] = tmp;
-        swaps    = 1;
+    for (k = 0; k < insize - 1; ++k) {
+      if (sym[k].Symbol > sym[k + 1].Symbol) {
+        tmp = sym[k];
+        sym[k] = sym[k + 1];
+        sym[k + 1] = tmp;
+        swaps = 1;
       }
     }
-  }
-  while( swaps );
+  } while (swaps);
 
-  for(uint i = 0; i < insize; i++){
+  for (uint i = 0; i < insize; i++) {
     output[i] = sym[i].Bits;
-    // std::cout << sym[i].Symbol << " " << sym[i].Count << " " << sym[i].Code << " " << sym[i].Bits << "\n";
   }
-
-  /*create table, length: number of elements(bit_ranges), calculate header*/
-
-  /*create tbale, bit_ranges, length, calculate actual size*/
-
-  /*get canonical code for each symbol*/
-  //todo
+  free(stream);
 }

@@ -3,11 +3,11 @@
  *      Author: Qi Wang
  *      Copyright 2017 Blippar
  */
-// #include "data_analysis.h"
+#include "data_analysis.h"
 #include "entropy.h"
 #include "variable_byte_encoding.h"
 // #include "delta_encoding.h"
-// #include "reorder.h"
+#include "reorder.h"
 #include "rebuilder.h"
 #include "compressor.h"
 #include "var_bits.h"
@@ -19,20 +19,154 @@ int main(int argc, char* argv[]){
 
 	std::string command(argv[1]);
 	/*Data Analysis*/
-	// DataAnalyser c;
-	// c.readSingleCodewordKeypoint();
+	if(command == "test") {
+		DataAnalyser d;
+		d.readSingleCodewordKeypoint();
+	}
 
-	/*run loadData first before run the following test*/
-	// c.loadData();
+	if(command == "imglength") {
+		DataAnalyser d;
+		d.loadData();
+		d.getkeypointDistribution();
+	}
 
-	/*run loadData above before run the following test*/
-	// c.getcodewordDistribution();
-	// c.getkeypointDistribution();
-	// c.getXCoordinateDistribution();
-	// c.getYCoordinateDistribution();
-	// c.getAngleDistribution();
-	// c.getSizeDistribution();
-	// c.getcodewordValueDistribution();
+	if(command == "codewordvalue") {
+		DataAnalyser d;
+		d.loadData();
+		d.getcodewordValueDistribution();
+	}
+
+	if(command == "angle") {
+		DataAnalyser d;
+		d.loadData();
+		d.getAngleDistribution();
+	}
+
+	if(command == "size") {
+		DataAnalyser d;
+		d.loadData();
+		d.getSizeDistribution();
+	}
+
+	if(command == "x") {
+        DataAnalyser d;
+        d.loadData();
+        d.getXCoordinateDistribution();
+    }
+
+   	if(command == "y") {
+        DataAnalyser d;
+        d.loadData();
+        d.getYCoordinateDistribution();
+    }
+
+   	if(command == "remap_cw") {
+		reorder r;
+		r.remap_cw();
+	}
+
+	if(command == "remap_angle") {
+		reorder r;
+		r.remap_angle();
+	}
+
+	if(command == "remap_cw_dis") {
+		DataAnalyser d;
+		d.LoadMapper();
+		d.loadData();
+		d.cw_disremap();
+	}
+
+	if(command == "remap_angle_dis") {
+		DataAnalyser d;
+		d.LoadMapperAngle();
+		d.loadData();
+		d.angle_disremap();
+	}
+
+
+	/*get dataset entropy*/
+	if(command == "cw_ave_en") {
+		Entropy e;
+		e.cw_avrage_entropy();
+		e.get_cw_entropy_dis();
+	}
+
+	/*delta for code word*/
+	if(command == "delta_cw") {
+		DataAnalyser d;
+		d.LoadMapper();
+		d.loadData_delta();
+		d.cw_remap_delta();
+	}
+
+	/*Huffman for angle*/
+	if( command == "huff_angle"){
+		rebuilder r;
+		r.HuffmanForAngle();
+	}
+
+	/*Huffman for cw*/
+	if( command == "huff_cw"){
+		rebuilder r;
+		r.HuffmanForCodeword();
+	}
+
+	/*Huffman for x*/
+	if(command == "huff_x"){
+		rebuilder r;
+		r.HuffmanForX();
+	}
+
+
+	/*new varbyte for x y size*/
+	if(command == "vbyte") {
+		rebuilder r;
+		r.Vbyte();
+	}
+
+	/*old varbyte for angle and cw*/
+	if(command == "old_vbyte"){
+		VarByteEncoding v;
+		v.encoding();
+	}
+
+	/*pfd*/
+	if(command == "pfd") {
+		rebuilder r;
+		r.pfd();
+	} 
+
+	/*Golomb*/
+	if(command == "golomb") {
+		rebuilder r;
+		r.golomb();
+	}
+
+	/*Simple9*/
+	if(command == "s9") {
+		rebuilder r;
+		r.simple9();
+	}
+
+	/*gzip*/
+	if(command == "gzip") {
+		rebuilder r;
+		r.gzip();
+	}
+
+	/*ans*/
+	if(command == "ans") {
+		rebuilder r;
+		r.ans();
+	}
+
+	// /*get entropy as a whole*/
+	// if(command == "entropy") {
+	// 	Entropy e;
+	// 	e.shannon_entropy_from_file();
+	// }
+
 
 	/*loading test*/
 	// c.originalLoading();
@@ -49,21 +183,9 @@ int main(int argc, char* argv[]){
 	// buf[4] = 2;
 	// e.shannon_test(buf, length);
 
-	/*get dataset entropy*/
-	// Entropy e;
-	// e.shannon_entropy_from_file();
-
-	/*varbyte test*/
-	// VarByteEncoding v;
-	// v.encoding();
-
 	/*delta test*/
 	// DeltaEncoding d;
 	// d.Encoding();
-
-	/*get new order*/
-	//reorder r;
-	//r.Order();
 
 	/*rebuild index*/
 	// rebuilder r;
@@ -158,11 +280,6 @@ int main(int argc, char* argv[]){
 	// rebuilder r;
 	// r.HuffmanForY();
 
-	/*Huffman for angle*/
-	if( command == "angle"){
-		rebuilder r;
-		r.HuffmanForAngle();
-	}
 
 	/*compress the size*/
 	// rebuilder r;

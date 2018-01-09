@@ -9,12 +9,23 @@ bool SortByFreq(CodewordIndexEntry i, CodewordIndexEntry j){
   return (i.count > j.count);
 }
 
-void reorder::Order(){
+bool SortByFreqAngle(AngleIndexEntry i, AngleIndexEntry j){
+  return (i.count > j.count);
+}
+
+void reorder::remap_cw(){
 	InitCodewordTable();
 	LoadBinaryDataFromFile();
 	ReorderTable();
 	// DisplayCodewordTable();
 	WriteTable();
+}
+
+void reorder::remap_angle(){
+  InitAngleTable();
+  LoadBinaryDataFromFile();
+  ReorderAngleTable();
+  WriteAngleTable();
 }
 
 void reorder::InitCodewordTable(){
@@ -27,10 +38,23 @@ void reorder::InitCodewordTable(){
 	}
 }
 
+void reorder::InitAngleTable(){
+  /*The Angle currently has 2M distinct values*/
+  int angle_table_size = 65536;
+  angle_table.reserve(angle_table_size);
+  for(int i = 0; i < angle_table_size; i++){
+    AngleIndexEntry e(i, 0);
+    angle_table.push_back(e);
+  }
+}
+
 void reorder::ReorderTable(){
 	std::sort(codeword_table.begin(), codeword_table.end(), SortByFreq);
 }
 
+void reorder::ReorderAngleTable(){
+  std::sort(angle_table.begin(), angle_table.end(), SortByFreqAngle);
+}
 
 void reorder::DisplayCodewordTable(){
 	for(int i = 0; i < 200; i++){
@@ -45,6 +69,15 @@ void reorder::WriteTable(){
 		fprintf(pFile, "%d %lu\n", codeword_table[i].codeword, codeword_table[i].count);
 	}
 	fclose(pFile);
+}
+
+void reorder::WriteAngleTable(){
+  FILE * pFile;
+  pFile = fopen (this->angle_mapping.c_str(), "w");
+  for(int i = 0; i < angle_table.size(); i++){
+    fprintf(pFile, "%d %lu\n", angle_table[i].angle, angle_table[i].count);
+  }
+  fclose(pFile);
 }
 
 void reorder::LoadBinaryDataFromFile(){
@@ -152,7 +185,8 @@ int reorder::ParseMultipleCodewordKeypoints(std::string id,
       ptr++;
       // std::cout << x << "," << y << "," << fsize << "," << angle << "," << (int)codewordcount << "," <<codeword << " ";
       codewordcount--;
-      codeword_table[codeword].count++;
+      // codeword_table[codeword].count++;
+      angle_table[angle].count++;
       // cwkeypoint_byname_[id].emplace_back(codeword, x, y, fsize, angle); // duplicate information stored here, x, y, fsize, angle, comment by me
     }
 

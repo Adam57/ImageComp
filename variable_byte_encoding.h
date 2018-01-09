@@ -3,10 +3,12 @@
 
 class VarByteEncoding{
 public:
-	const std::string binaryDocumentFile = "/mnt3/qi/indexData/bespoke_20170606_rerank.bin";
-	const std::string varByteDocumentFile = "/mnt3/qi/indexData/varbyte_bespoke_20170606_rerank.bin";
+	// const std::string binaryDocumentFile = "/mnt3/qi/indexData/bespoke_20170606_rerank.bin";
+	// const std::string varByteDocumentFile = "/mnt3/qi/indexData/varbyte_bespoke_20170606_rerank.bin";
+	const std::string binaryDocumentFile = "/home/qw376/fic_data/rerank.bin";
 	std::vector<unsigned char> compressedList;
 	std::vector<unsigned uint> uncompressedList;
+	int num_vars;
 	int compressionVbytes(std::vector<unsigned int> input);
 	int decompressionVbytesInt(unsigned char* input, unsigned * output, int size);
 	void loadDataFromFile();

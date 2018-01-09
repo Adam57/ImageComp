@@ -694,4 +694,13 @@ public:
 
 inline CodewordIndexEntry::CodewordIndexEntry(int cw, int cnt) : codeword(cw), count(cnt){}
 
+class AngleIndexEntry{
+public:
+  int angle;
+  uint32_t count;
+  AngleIndexEntry(int angle, int cnt);
+};
+
+inline AngleIndexEntry::AngleIndexEntry(int ang, int cnt) : angle(ang), count(cnt){}
+
 #endif
