@@ -1668,7 +1668,6 @@ void rebuilder::gzip(){
   std::cout << "compressed size: " <<  num_vbyte_vars << "\n";
 }
 
-/*ans*/
 #define KB *(1<<10)
 #define MB *(1<<20)
 #define BUFFERSIZE ((1 MB) - 1)
@@ -1678,101 +1677,46 @@ void rebuilder::gzip(){
 #define PRIME1   2654435761U
 #define PRIME2   2246822519U
 
-
-static unsigned FUZ_rand (unsigned* src)
-{
-    *src =  ( (*src) * PRIME1) + PRIME2;
-    return (*src) >> 11;
-}
-
-static void generate (void* buffer, size_t buffSize, double p, U32* seed)
-{
-    char table[PROBATABLESIZE] = {0};
-    int remaining = PROBATABLESIZE;
-    int pos = 0;
-    int s = 0;
-    char* op = (char*) buffer;
-    char* oend = op + buffSize;
-
-    /* Build Table */
-    while (remaining)
-    {
-        int n = (int) (remaining * p);
-        int end;
-        if (!n) n=1;
-        end = pos + n;
-        while (pos<end) table[pos++]= (char) s;
-        s++;
-        remaining -= n;
-    }
-
-    /* Fill buffer */
-    while (op<oend)
-    {
-        const int r = FUZ_rand (seed) & (PROBATABLESIZE-1);
-        *op++ = table[r];
-    }
-}
-
-// void rebuilder::ans(){
-//   std::cout << "ans\n";
-//   BYTE* bufferTest;
-//   BYTE* bufferP15   = (BYTE*) malloc (BUFFERSIZE+64);
-//   U32 rootSeed = 10;
-//   U32 roundSeed = rootSeed ^ 0xEDA5B371;
-//   const size_t maxTestSizeMask = 0x1FFFF;
-//   generate (bufferP15 , BUFFERSIZE, 0.15, &rootSeed);
-//   size_t offset = (FUZ_rand(&roundSeed) % (BUFFERSIZE - 64 - maxTestSizeMask));
-//   bufferTest = bufferP15 + offset;
-
-//   BYTE* bufferDst   = (BYTE*) malloc (BUFFERSIZE+64);
-//   size_t bufferDstSize = BUFFERSIZE+64;
-//   size_t sizeOrig = (FUZ_rand (&roundSeed) & maxTestSizeMask) + 1;
-
-//   // size_t sizeCompressed = FSE_compress (bufferDst, bufferDstSize, bufferTest, sizeOrig);
-// }
-
-void rebuilder::ans(){
+void rebuilder::ans_test(){
   std::cout << "ans\n";
+  size_t sourceSize = 10;
+  size_t dstSize = FSE_compressBound(sourceSize);
+
+  BYTE* bufferSource   = (BYTE*) malloc (sourceSize);
+  BYTE* bufferDst   = (BYTE*) malloc (BUFFERSIZE+64);
+  BYTE* bufferVerif = (BYTE*) malloc (BUFFERSIZE+64);
+  bufferDst[dstSize] = {0};
+
+  bufferSource[0] = 1;
+  bufferSource[1] = 2;
+  bufferSource[2] = 1;
+  bufferSource[3] = 2;
+  bufferSource[4] = 2;
+  bufferSource[5] = 1;
+  bufferSource[6] = 2;
+  bufferSource[7] = 3;
+  bufferSource[8] = 2;
+  bufferSource[9] = 2;
+
+
+  size_t sizeCompressed = FSE_compress (bufferDst, dstSize, bufferSource, sourceSize);
+  std::cout << "\nCompressed function return " << sizeCompressed << "\n";
+  std::cout << "compression error name: " << FSE_getErrorName(sizeCompressed) << "\n";
+
+  std::cout << "\nCompressed Content:\n";
+  for(uint i = 0; i < 10; i++) {
+    std::cout << (int)bufferDst[i] << "\n";
+    std::cout << std::bitset<8>(bufferDst[i]) << "\n";
+  }
+
+  size_t d_return = FSE_decompress(bufferVerif, 10, bufferDst, sizeCompressed);
+  std::cout << "\nDecompressed function return " << d_return << "\n";
+  std::cout << "decompression error name: " << FSE_getErrorName(d_return) << "\n";
+  // FSE_decompress(void* dst,  size_t dstCapacity, const void* cSrc, size_t cSrcSize);
+
+  std::cout << "\nDecompressed Content:\n";
+  for(uint i = 0; i < 10; i++) {
+    std::cout << (int)bufferVerif[i] << "\n";
+    std::cout << std::bitset<8>(bufferVerif[i]) << "\n";
+  }
 }
-
-// void rebuilder::ans(){
-//   std::cout << "ans\n";
-//   int sourceSize = 10;
-//   int dstSize = FSE_COMPRESSBOUND(sourceSize);
-
-//   BYTE* bufferTest = (BYTE*) malloc (sourceSize);
-//   BYTE* bufferDst = (BYTE*) malloc (dstSize);
-
-
-//   // std::cout << "bufferTest\n";
-//   // for(uint i = 0; i < 10; i++) {
-//   //   bufferTest[i] = 12;
-//   //   std::cout << std::bitset<8>(bufferTest[i]) << "\n";
-//   // }
-//   bufferTest[0] = 'a';
-//   bufferTest[1] = 'a';
-//   bufferTest[2] = 'a';
-//   bufferTest[3] = 'b';
-//   bufferTest[4] = 'c';
-//   bufferTest[5] = 'c';
-//   bufferTest[6] = 'a';
-//   bufferTest[7] = 'a';
-//   bufferTest[8] = 'a';
-//   bufferTest[9] = 'a';
-
-//   bufferDst[dstSize] = {0}; 
-
-//   FSE_compress(bufferDst, bufferTest, sourceSize);
-
-//   std::cout << "--bufferDst--\n";
-
-//   // for(uint i = 0; i < 100; i++) {
-//   //   std::cout << bufferDst[i] << "\n";
-//   //   std::cout << std::bitset<8>(bufferDst[i]) << "\n";
-//   // }
-
-//   /* exit */
-//   std::cout << "exiting now\n";
-//   free (bufferTest);
-// }

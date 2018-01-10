@@ -156,9 +156,9 @@ int main(int argc, char* argv[]){
 	}
 
 	/*ans*/
-	if(command == "ans") {
+	if(command == "ans_test") {
 		rebuilder r;
-		r.ans();
+		r.ans_test();
 	}
 
 	// /*get entropy as a whole*/

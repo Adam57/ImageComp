@@ -107,5 +107,6 @@ public:
 	void gzip();
 	
 	/*ans*/
+	void ans_test();
 	void ans();
 };
